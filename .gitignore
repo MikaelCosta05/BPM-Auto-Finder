@@ -1,0 +1,15 @@
+build/
+dist/
+*.spec
+*.exe
+*.dll
+*.mp3
+*.wav
+*.ogg
+*.flac
+__pycache__/
+*.pyc
+.venv/
+venv/
+.idea/
+.vscode/
