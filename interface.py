@@ -100,7 +100,7 @@ def get_audio_duration(path):
 def convert_to_temp_wav(source_path):
     ffmpeg = find_ffmpeg()
     if not ffmpeg:
-        raise RuntimeError("FFmpeg não foi encontrado.")
+        raise RuntimeError("FFmpeg was not found.")
     temp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
     temp_path = temp.name
     temp.close()
@@ -139,7 +139,7 @@ def read_wav_mono(path):
         frames = wav.getnframes()
         raw = wav.readframes(frames)
     if sample_width != 2:
-        raise RuntimeError("O WAV precisa estar em 16 bits.")
+        raise RuntimeError("The WAV file must be 16-bit.")
     data = np.frombuffer(raw, dtype=np.int16).astype(np.float32)
     if channels > 1:
         data = data.reshape(-1, channels).mean(axis=1)
@@ -312,7 +312,7 @@ def filter_primary_kicks(kicks, bpm, tolerance=0.060):
             phase = abs(((candidate_time - offset + interval / 2) % interval) - interval / 2)
             if phase <= tolerance:
                 score += candidate_strength * (1.0 - phase / tolerance)
-        if best_score is None or score > best_score:
+        if best_score is None or score > best_score or (score == best_score and error < best[3]):
             best_score = score
             best_offset = offset
 
@@ -591,24 +591,24 @@ class MainWindow(QMainWindow):
         return path
 
     def setup_menu(self):
-        menu = self.menuBar().addMenu("Arquivo")
-        open_action = QAction("Abrir música", self)
+        menu = self.menuBar().addMenu("File")
+        open_action = QAction("Open Song", self)
         open_action.triggered.connect(self.choose_file)
         menu.addAction(open_action)
 
-        export_csv_action = QAction("Exportar CSV", self)
+        export_csv_action = QAction("Export CSV", self)
         export_csv_action.triggered.connect(self.export_csv)
         menu.addAction(export_csv_action)
 
-        export_json_action = QAction("Exportar JSON", self)
+        export_json_action = QAction("Export JSON", self)
         export_json_action.triggered.connect(self.export_json)
         menu.addAction(export_json_action)
 
-        export_pagoda_action = QAction("Exportar para Pagoda", self)
+        export_pagoda_action = QAction("Export to Pagoda", self)
         export_pagoda_action.triggered.connect(self.export_pagoda)
         menu.addAction(export_pagoda_action)
 
-        export_midi_action = QAction("Exportar MIDI", self)
+        export_midi_action = QAction("Export MIDI", self)
         export_midi_action.triggered.connect(self.export_midi)
         menu.addAction(export_midi_action)
 
@@ -679,7 +679,7 @@ class MainWindow(QMainWindow):
         self.offset_input.clear()
         self.kick_curve.setData([], [])
         self.spectrum_curve.setData(np.zeros(256))
-        self.log_text("Todos os marcadores, kicks, toms e BPMs foram limpos.")
+        self.log_text("All markers, kicks, toms, and BPMs have been cleared.")
 
     def setup_ui(self):
         central = QWidget()
@@ -698,19 +698,19 @@ class MainWindow(QMainWindow):
         logo_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #f8fafc;")
         sidebar_layout.addWidget(logo_label)
 
-        lbl_sec1 = QLabel("ARQUIVO")
+        lbl_sec1 = QLabel("FILE")
         lbl_sec1.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569; margin-top: 10px;")
         sidebar_layout.addWidget(lbl_sec1)
 
-        self.open_button = QPushButton("📁 Abrir música")
+        self.open_button = QPushButton("📁 Open Song")
         self.open_button.clicked.connect(self.choose_file)
         sidebar_layout.addWidget(self.open_button)
 
-        lbl_sec2 = QLabel("METRÔNOMO")
+        lbl_sec2 = QLabel("METRONOME")
         lbl_sec2.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569; margin-top: 10px;")
         sidebar_layout.addWidget(lbl_sec2)
 
-        self.kick_metronome_button = QPushButton("Metrônomo: BPM")
+        self.kick_metronome_button = QPushButton("Metronome: BPM")
         self.kick_metronome_button.clicked.connect(self.toggle_metronome_mode)
         sidebar_layout.addWidget(self.kick_metronome_button)
 
@@ -723,12 +723,12 @@ class MainWindow(QMainWindow):
         vol_box.addWidget(self.click_volume_slider)
         sidebar_layout.addLayout(vol_box)
 
-        lbl_sec3 = QLabel("TRECHO DA ANÁLISE")
+        lbl_sec3 = QLabel("ANALYSIS SECTION")
         lbl_sec3.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569; margin-top: 10px;")
         sidebar_layout.addWidget(lbl_sec3)
 
         p1 = QHBoxLayout()
-        p1.addWidget(QLabel("Trecho (s)"))
+        p1.addWidget(QLabel("Section (s)"))
         self.segment_input = QLineEdit("30")
         p1.addWidget(self.segment_input)
         sidebar_layout.addLayout(p1)
@@ -740,13 +740,13 @@ class MainWindow(QMainWindow):
         sidebar_layout.addLayout(p2)
 
         p3 = QHBoxLayout()
-        p3.addWidget(QLabel("Sensibilidade"))
+        p3.addWidget(QLabel("Sensitivity"))
         self.sensitivity_input = QLineEdit("1.75")
         p3.addWidget(self.sensitivity_input)
         sidebar_layout.addLayout(p3)
 
         p4 = QHBoxLayout()
-        p4.addWidget(QLabel("Distância (s)"))
+        p4.addWidget(QLabel("Distance (s)"))
         self.kick_gap_input = QLineEdit("0.28")
         p4.addWidget(self.kick_gap_input)
         sidebar_layout.addLayout(p4)
@@ -769,7 +769,7 @@ class MainWindow(QMainWindow):
         gap_btn_box.addWidget(self.gap_plus_button)
         sidebar_layout.addLayout(gap_btn_box)
 
-        self.adaptive_check = QCheckBox("Análise por trechos")
+        self.adaptive_check = QCheckBox("Section-based analysis")
         self.adaptive_check.setChecked(True)
         sidebar_layout.addWidget(self.adaptive_check)
 
@@ -786,7 +786,7 @@ class MainWindow(QMainWindow):
         header_layout = QHBoxLayout(header_card)
         header_layout.setContentsMargins(12, 8, 12, 8)
 
-        self.file_label = QLabel("Nenhuma música selecionada")
+        self.file_label = QLabel("No song selected")
         self.file_label.setStyleSheet("font-weight: bold; color: #f8fafc;")
         header_layout.addWidget(self.file_label)
         header_layout.addStretch()
@@ -809,17 +809,17 @@ class MainWindow(QMainWindow):
         card_an = QFrame()
         card_an.setObjectName("card")
         l_an = QVBoxLayout(card_an)
-        lbl_an = QLabel("DETECÇÃO & ANÁLISE")
+        lbl_an = QLabel("DETECTION & ANALYSIS")
         lbl_an.setStyleSheet("font-size: 10px; font-weight: bold; color: #818cf8;")
         l_an.addWidget(lbl_an)
 
         r_an1 = QHBoxLayout()
-        self.analyze_button = QPushButton("Analisar BPM")
+        self.analyze_button = QPushButton("Analyze BPM")
         self.analyze_button.setObjectName("btn_primary")
         self.analyze_button.clicked.connect(self.analyze_full)
-        self.segments_button = QPushButton("Múltiplos BPM")
+        self.segments_button = QPushButton("Multiple BPMs")
         self.segments_button.clicked.connect(self.analyze_segments)
-        self.auto_fit_button = QPushButton("Ajustar BPM/Offset")
+        self.auto_fit_button = QPushButton("Fit BPM/Offset")
         self.auto_fit_button.clicked.connect(self.auto_fit_bpm_offset)
         r_an1.addWidget(self.analyze_button)
         r_an1.addWidget(self.segments_button)
@@ -827,13 +827,13 @@ class MainWindow(QMainWindow):
         l_an.addLayout(r_an1)
 
         r_an2 = QHBoxLayout()
-        self.kicks_button = QPushButton("Detectar Kicks")
+        self.kicks_button = QPushButton("Detect Kicks")
         self.kicks_button.setObjectName("btn_outline_green")
         self.kicks_button.clicked.connect(self.detect_and_draw_kicks)
-        self.primary_kicks_button = QPushButton("Kick Principal")
+        self.primary_kicks_button = QPushButton("Primary Kick")
         self.primary_kicks_button.setObjectName("btn_outline_blue")
         self.primary_kicks_button.clicked.connect(self.apply_primary_kick_mode)
-        self.toms_button = QPushButton("Detectar Toms")
+        self.toms_button = QPushButton("Detect Toms")
         self.toms_button.setObjectName("btn_outline_orange")
         self.toms_button.clicked.connect(self.detect_and_draw_toms)
         r_an2.addWidget(self.kicks_button)
@@ -845,7 +845,7 @@ class MainWindow(QMainWindow):
         card_grid = QFrame()
         card_grid.setObjectName("card")
         l_grid = QVBoxLayout(card_grid)
-        lbl_grid = QLabel("GRADE & OFFSET")
+        lbl_grid = QLabel("GRID & OFFSET")
         lbl_grid.setStyleSheet("font-size: 10px; font-weight: bold; color: #34d399;")
         l_grid.addWidget(lbl_grid)
 
@@ -860,7 +860,7 @@ class MainWindow(QMainWindow):
         self.offset_input.setFixedWidth(75)
         r_g1.addWidget(self.offset_input)
 
-        self.apply_button = QPushButton("Aplicar")
+        self.apply_button = QPushButton("Apply")
         self.apply_button.setObjectName("btn_success")
         self.apply_button.clicked.connect(self.apply_beats)
         r_g1.addWidget(self.apply_button)
@@ -885,26 +885,26 @@ class MainWindow(QMainWindow):
         card_exp = QFrame()
         card_exp.setObjectName("card")
         l_exp = QVBoxLayout(card_exp)
-        lbl_exp = QLabel("AÇÕES & EXPORTAÇÃO")
+        lbl_exp = QLabel("ACTIONS & EXPORT")
         lbl_exp.setStyleSheet("font-size: 10px; font-weight: bold; color: #c084fc;")
         l_exp.addWidget(lbl_exp)
 
         r_e1 = QHBoxLayout()
-        self.export_pagoda_button = QPushButton("Exportar Pagoda")
+        self.export_pagoda_button = QPushButton("Export Pagoda")
         self.export_pagoda_button.setObjectName("btn_primary")
         self.export_pagoda_button.clicked.connect(self.export_pagoda)
-        self.export_midi_button = QPushButton("Exportar MIDI")
+        self.export_midi_button = QPushButton("Export MIDI")
         self.export_midi_button.clicked.connect(self.export_midi)
         r_e1.addWidget(self.export_pagoda_button)
         r_e1.addWidget(self.export_midi_button)
         l_exp.addLayout(r_e1)
 
         r_e2 = QHBoxLayout()
-        self.clear_all_button = QPushButton("Limpar Marcadores")
+        self.clear_all_button = QPushButton("Clear Markers")
         self.clear_all_button.setObjectName("btn_danger")
         self.clear_all_button.clicked.connect(self.clear_all_markers)
         self.zoom_combo = QComboBox()
-        self.zoom_combo.addItems(["Completo", "10s", "20s", "30s", "60s", "120s"])
+        self.zoom_combo.addItems(["Full", "10s", "20s", "30s", "60s", "120s"])
         self.zoom_combo.currentTextChanged.connect(self.apply_zoom)
         r_e2.addWidget(self.clear_all_button)
         r_e2.addWidget(QLabel("Zoom:"))
@@ -919,7 +919,7 @@ class MainWindow(QMainWindow):
         self.wave_plot.showGrid(x=True, y=False, alpha=0.15)
         self.wave_plot.setMouseEnabled(x=True, y=False)
         self.wave_plot.setMenuEnabled(False)
-        self.wave_plot.setLabel("bottom", "Tempo", units="s")
+        self.wave_plot.setLabel("bottom", "Time", units="s")
         self.wave_plot.setYRange(-1.05, 1.05)
         self.wave_plot.hideAxis("left")
 
@@ -933,7 +933,7 @@ class MainWindow(QMainWindow):
         self.kick_plot.showGrid(x=True, y=True, alpha=0.15)
         self.kick_plot.setMouseEnabled(x=True, y=False)
         self.kick_plot.setMenuEnabled(False)
-        self.kick_plot.setLabel("bottom", "Força dos kicks")
+        self.kick_plot.setLabel("bottom", "Kick Strength")
         self.kick_plot.setYRange(0, 1.05)
         self.kick_plot.hideAxis("left")
         self.kick_curve = self.kick_plot.plot([], [], pen=pg.mkPen("#34d399", width=1))
@@ -981,15 +981,15 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(splitter)
         root_layout.addWidget(main_content)
 
-        self.statusBar().showMessage("Pronto")
+        self.statusBar().showMessage("Ready")
         self.setCentralWidget(central)
 
     def choose_file(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Escolher música",
+            "Choose Song",
             "",
-            "Áudio (*.mp3 *.wav *.flac *.ogg *.m4a);;Todos os arquivos (*.*)"
+            "Audio (*.mp3 *.wav *.flac *.ogg *.m4a);;All files (*.*)"
         )
         if not path:
             return
@@ -1005,7 +1005,7 @@ class MainWindow(QMainWindow):
         self.audio_path = path
         self.file_label.setText(path)
         self.log.clear()
-        self.log_text("Carregando waveform...")
+        self.log_text("Loading waveform...")
         try:
             if self.temp_wav_path and os.path.isfile(self.temp_wav_path):
                 try:
@@ -1028,17 +1028,17 @@ class MainWindow(QMainWindow):
             self.wave_plot.setXRange(0, max(self.duration, 1), padding=0)
             self.player.setSource(QUrl.fromLocalFile(path))
             self.update_position_label(0)
-            self.log_text(f"Música carregada: {os.path.basename(path)}")
-            self.log_text(f"Duração: {self.duration:.2f}s")
+            self.log_text(f"Song loaded: {os.path.basename(path)}")
+            self.log_text(f"Duration: {self.duration:.2f}s")
         except Exception as error:
-            QMessageBox.critical(self, "Erro", str(error))
+            QMessageBox.critical(self, "Error", str(error))
 
     def validate_audio(self):
         if not self.audio_path:
-            QMessageBox.warning(self, "Aviso", "Escolha uma música primeiro.")
+            QMessageBox.warning(self, "Warning", "Choose a song first.")
             return False
         if not os.path.isfile(self.audio_path):
-            QMessageBox.critical(self, "Erro", "O arquivo escolhido não existe.")
+            QMessageBox.critical(self, "Error", "The selected file does not exist.")
             return False
         return True
 
@@ -1050,7 +1050,7 @@ class MainWindow(QMainWindow):
             self.log.clear()
             self.clear_segment_lines()
             self.detected_segments = []
-            self.log_text("Analisando BPM da música completa (modo nativo)...")
+            self.log_text("Analyzing BPM of the full song (native mode)...")
             QApplication.processEvents()
             
             try:
@@ -1086,7 +1086,7 @@ class MainWindow(QMainWindow):
                     self.draw_beats(bpm, offset)
                     return
 
-            QMessageBox.warning(self, "Aviso", "Não consegui detectar BPM/offset nesse arquivo.")
+            QMessageBox.warning(self, "Warning", "Could not detect BPM/offset in this file.")
         finally:
             self.centralWidget().setEnabled(True)
 
@@ -1098,7 +1098,7 @@ class MainWindow(QMainWindow):
             if segment_size <= 0:
                 raise ValueError()
         except Exception:
-            QMessageBox.critical(self, "Erro", "O tamanho do trecho precisa ser maior que zero.")
+            QMessageBox.critical(self, "Error", "The section size must be greater than zero.")
             return
 
         self.centralWidget().setEnabled(False)
@@ -1106,7 +1106,7 @@ class MainWindow(QMainWindow):
             self.log.clear()
             self.clear_segment_lines()
             self.detected_segments = []
-            self.log_text("Detectando múltiplos BPM (análise nativa)...")
+            self.log_text("Detecting multiple BPMs (native analysis)...")
             QApplication.processEvents()
 
             step = segment_size / 2.0
@@ -1137,17 +1137,17 @@ class MainWindow(QMainWindow):
                             "end": start + current_duration
                         }
                         raw_results.append(result)
-                        self.log_text(f"Analisando {start:.1f}s - {start + current_duration:.1f}s... OK ({fb_bpm:.1f} BPM)")
+                        self.log_text(f"Analyzing {start:.1f}s - {start + current_duration:.1f}s... OK ({fb_bpm:.1f} BPM)")
                     else:
-                        self.log_text(f"Analisando {start:.1f}s - {start + current_duration:.1f}s... Falhou")
+                        self.log_text(f"Analyzing {start:.1f}s - {start + current_duration:.1f}s... Failed")
                 else:
-                    self.log_text(f"Analisando {start:.1f}s - {start + current_duration:.1f}s... Poucos kicks")
+                    self.log_text(f"Analyzing {start:.1f}s - {start + current_duration:.1f}s... Too few kicks")
                 
                 start += step
                 QApplication.processEvents()
 
             if not raw_results:
-                self.log_text("Nenhum BPM detectado nos trechos.")
+                self.log_text("No BPM detected in the sections.")
                 return
 
             consolidated = []
@@ -1162,7 +1162,7 @@ class MainWindow(QMainWindow):
             consolidated.append(current_group)
 
             self.log_text("")
-            self.log_text("--- RESULTADO CONSOLIDADO ---")
+            self.log_text("--- CONSOLIDATED RESULT ---")
 
             final_segments = []
             best_global = None
@@ -1180,7 +1180,7 @@ class MainWindow(QMainWindow):
                     "fitness": best_in_group["fitness"]
                 })
                 
-                self.log_text(f"{g_start:.2f}s até {g_end:.2f}s:")
+                self.log_text(f"{g_start:.2f}s to {g_end:.2f}s:")
                 self.log_text(f"  BPM: {best_in_group['bpm']:.6f} | Offset: {best_in_group['offset'] * 1000.0:.2f}ms")
                 
                 if best_global is None or best_in_group["fitness"] > best_global["fitness"]:
@@ -1194,7 +1194,7 @@ class MainWindow(QMainWindow):
                 self.offset_input.setText(f"{best_global['offset'] * 1000.0:.2f}")
                 self.draw_beats(best_global["bpm"], best_global["offset"])
                 self.log_text("")
-                self.log_text(f"Melhor trecho global ({best_global['start']:.2f}s - {best_global['end']:.2f}s) aplicado à grade.")
+                self.log_text(f"Best global section ({best_global['start']:.2f}s - {best_global['end']:.2f}s) applied to the grid.")
         finally:
             self.centralWidget().setEnabled(True)
 
@@ -1208,13 +1208,13 @@ class MainWindow(QMainWindow):
             if min_gap <= 0 or segment_size <= 0:
                 raise ValueError()
         except Exception:
-            QMessageBox.critical(self, "Erro", "Sensibilidade, distância e trecho precisam ser números válidos.")
+            QMessageBox.critical(self, "Error", "Sensitivity, distance, and section must be valid numbers.")
             return
 
         self.centralWidget().setEnabled(False)
         try:
             self.log_text("")
-            self.log_text("Detectando kicks...")
+            self.log_text("Detecting kicks...")
             QApplication.processEvents()
 
             if self.adaptive_check.isChecked():
@@ -1248,15 +1248,15 @@ class MainWindow(QMainWindow):
             self.draw_kick_strength_curve(self.kicks)
             self.prepare_metronome_playback()
 
-            self.log_text(f"Kicks detectados: {len(self.kicks)}")
+            self.log_text(f"Kicks detected: {len(self.kicks)}")
             if self.kicks:
                 strongest = max(self.kicks, key=lambda item: item[1])
                 first = self.kicks[0]
-                self.log_text(f"Primeiro kick: {first[0]:.6f}s")
-                self.log_text(f"Kick mais forte: {strongest[0]:.6f}s")
-                self.log_text("Metrônomo nos kicks ativado.")
+                self.log_text(f"First kick: {first[0]:.6f}s")
+                self.log_text(f"Strongest kick: {strongest[0]:.6f}s")
+                self.log_text("Metronome on kicks enabled.")
             else:
-                self.log_text("Nenhum kick detectado.")
+                self.log_text("No kicks detected.")
         finally:
             self.centralWidget().setEnabled(True)
 
@@ -1270,14 +1270,14 @@ class MainWindow(QMainWindow):
         except Exception:
             bpm = 0.0
         if bpm <= 0:
-            QMessageBox.warning(self, "Aviso", "Detecte ou informe o BPM primeiro para usar o modo kick principal.")
+            QMessageBox.warning(self, "Warning", "Detect or enter the BPM first to use primary kick mode.")
             return
         self.kicks = filter_primary_kicks(self.all_kicks or self.kicks, bpm)
         self.draw_kicks(self.kicks)
         self.draw_kick_strength_curve(self.kicks)
         self.prepare_metronome_playback()
         self.log_text("")
-        self.log_text(f"Modo kick principal aplicado: {len(self.kicks)} kicks mantidos.")
+        self.log_text(f"Primary kick mode applied: {len(self.kicks)} kicks kept.")
 
     def draw_toms(self, toms):
         self.clear_tom_lines()
@@ -1305,13 +1305,13 @@ class MainWindow(QMainWindow):
             if min_gap <= 0 or segment_size <= 0:
                 raise ValueError()
         except Exception:
-            QMessageBox.critical(self, "Erro", "Sensibilidade, distância e trecho precisam ser números válidos.")
+            QMessageBox.critical(self, "Error", "Sensitivity, distance, and section must be valid numbers.")
             return
 
         self.centralWidget().setEnabled(False)
         try:
             self.log_text("")
-            self.log_text("Detectando toms (tambores) da bateria...")
+            self.log_text("Detecting toms (drums)...")
             QApplication.processEvents()
 
             if self.adaptive_check.isChecked():
@@ -1345,11 +1345,11 @@ class MainWindow(QMainWindow):
 
             self.draw_toms(self.toms)
             
-            self.log_text(f"Toms detectados: {len(self.toms)}")
+            self.log_text(f"Toms detected: {len(self.toms)}")
             if self.toms:
-                self.log_text("Os toms foram desenhados no gráfico (linhas laranjas).")
+                self.log_text("The toms were drawn on the graph (orange lines).")
             else:
-                self.log_text("Nenhum tom detectado.")
+                self.log_text("No toms detected.")
         finally:
             self.centralWidget().setEnabled(True)
 
@@ -1365,7 +1365,7 @@ class MainWindow(QMainWindow):
             self.detect_and_draw_kicks()
 
         if not self.kicks:
-            QMessageBox.warning(self, "Aviso", "Nenhum kick foi detectado.")
+            QMessageBox.warning(self, "Warning", "No kicks were detected.")
             return
 
         fitted_bpm, fitted_offset, score = fit_bpm_offset_to_kicks(self.kicks, initial_bpm)
@@ -1374,11 +1374,11 @@ class MainWindow(QMainWindow):
         self.draw_beats(fitted_bpm, fitted_offset)
 
         self.log_text("")
-        self.log_text("BPM/offset ajustados usando os kicks:")
-        self.log_text(f"BPM anterior: {initial_bpm:.6f}")
-        self.log_text(f"BPM ajustado: {fitted_bpm:.6f}")
-        self.log_text(f"Offset ajustado: {fitted_offset * 1000.0:.2f}ms")
-        self.log_text(f"Pontuação do encaixe: {score:.6f}")
+        self.log_text("BPM/offset adjusted using kicks:")
+        self.log_text(f"Previous BPM: {initial_bpm:.6f}")
+        self.log_text(f"Adjusted BPM: {fitted_bpm:.6f}")
+        self.log_text(f"Adjusted offset: {fitted_offset * 1000.0:.2f}ms")
+        self.log_text(f"Fit score: {score:.6f}")
 
     def sync_offset_with_kick(self):
         self.auto_fit_bpm_offset()
@@ -1386,23 +1386,23 @@ class MainWindow(QMainWindow):
     def set_metronome_mode(self, mode):
         self.metronome_mode = mode
         if mode == "kicks":
-            self.kick_metronome_button.setText("Metrônomo: kicks")
+            self.kick_metronome_button.setText("Metronome: kicks")
         elif mode == "toms":
-            self.kick_metronome_button.setText("Metrônomo: toms")
+            self.kick_metronome_button.setText("Metronome: toms")
         elif mode == "bpm":
-            self.kick_metronome_button.setText("Metrônomo: BPM")
+            self.kick_metronome_button.setText("Metronome: BPM")
         self.prepare_metronome_playback()
 
     def toggle_metronome_mode(self):
         if self.metronome_mode == "kicks":
             self.set_metronome_mode("toms")
-            self.log_text("Metrônomo configurado para tocar nos toms detectados.")
+            self.log_text("Metronome configured to play detected toms.")
         elif self.metronome_mode == "toms":
             self.set_metronome_mode("bpm")
-            self.log_text("Metrônomo configurado para tocar na grade de BPM.")
+            self.log_text("Metronome configured to play the BPM grid.")
         else:
             self.set_metronome_mode("kicks")
-            self.log_text("Metrônomo configurado para tocar nos kicks detectados.")
+            self.log_text("Metronome configured to play detected kicks.")
 
     def update_click_volume(self):
         volume = self.click_volume_slider.value() / 200.0
@@ -1526,7 +1526,7 @@ class MainWindow(QMainWindow):
             if bpm <= 0:
                 raise ValueError()
         except Exception:
-            QMessageBox.critical(self, "Erro", "Informe BPM e offset válidos.")
+            QMessageBox.critical(self, "Error", "Enter a valid BPM and offset.")
             return
         self.draw_beats(bpm, offset)
 
@@ -1688,7 +1688,7 @@ class MainWindow(QMainWindow):
         value = self.zoom_combo.currentText()
         if not self.duration:
             return
-        if value == "Completo":
+        if value == "Full":
             self.wave_plot.setXRange(0, self.duration, padding=0)
             return
         seconds = float(value.replace("s", ""))
@@ -1704,7 +1704,7 @@ class MainWindow(QMainWindow):
             return
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Exportar CSV",
+            "Export CSV",
             os.path.join(BASE_DIR, "resultado_bpm_kicks.csv"),
             "CSV (*.csv)"
         )
@@ -1721,14 +1721,14 @@ class MainWindow(QMainWindow):
             writer.writerow(["kick_time", "strength"])
             for time_value, strength in self.kicks:
                 writer.writerow([f"{time_value:.6f}", f"{strength:.6f}"])
-        self.log_text(f"CSV exportado: {path}")
+        self.log_text(f"CSV exported: {path}")
 
     def export_json(self):
         if not self.validate_audio():
             return
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Exportar JSON",
+            "Export JSON",
             os.path.join(BASE_DIR, "resultado_bpm_kicks.json"),
             "JSON (*.json)"
         )
@@ -1749,7 +1749,7 @@ class MainWindow(QMainWindow):
         }
         with open(path, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=2, ensure_ascii=False)
-        self.log_text(f"JSON exportado: {path}")
+        self.log_text(f"JSON exported: {path}")
 
     def export_pagoda(self):
         if not self.validate_audio():
@@ -1757,7 +1757,7 @@ class MainWindow(QMainWindow):
         
         ffmpeg = find_ffmpeg()
         if not ffmpeg:
-            QMessageBox.critical(self, "Erro", "FFmpeg não foi encontrado.")
+            QMessageBox.critical(self, "Error", "FFmpeg was not found.")
             return
 
         try:
@@ -1766,7 +1766,7 @@ class MainWindow(QMainWindow):
             bpm = float(bpm_text)
             offset_ms = float(offset_text)
         except Exception:
-            QMessageBox.critical(self, "Erro", "BPM e Offset precisam ser números válidos.")
+            QMessageBox.critical(self, "Error", "BPM and Offset must be valid numbers.")
             return
             
         base_name = os.path.splitext(os.path.basename(self.audio_path))[0]
@@ -1775,7 +1775,7 @@ class MainWindow(QMainWindow):
             artist = parts[0].strip()
             song = parts[1].strip()
         else:
-            artist = "Desconhecido"
+            artist = "Unknown"
             song = base_name.strip()
             
         folder_name = f"{artist} - {song}"
@@ -1785,13 +1785,13 @@ class MainWindow(QMainWindow):
         ogg_path_sys = os.path.join(pagoda_path, "Audio.ogg")
         ogg_path_json = ogg_path_sys.replace("\\", "/")
         
-        self.log_text(f"Convertendo para OGG na pasta: {pagoda_path}...")
+        self.log_text(f"Converting to OGG in folder: {pagoda_path}...")
         QApplication.processEvents()
         
         process = subprocess.run([ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-i", self.audio_path, "-map", "0:a:0", "-map_metadata", "-1", "-c:a", "libvorbis", "-ac", "2", "-ar", "44100", "-q:a", "5", ogg_path_sys], text=True, capture_output=True, env=build_env())
         if process.returncode != 0:
-            error_msg = process.stderr.strip() if process.stderr else "Erro desconhecido na conversão."
-            QMessageBox.critical(self, "Erro na conversão", error_msg)
+            error_msg = process.stderr.strip() if process.stderr else "Unknown error during conversion."
+            QMessageBox.critical(self, "Conversion Error", error_msg)
             return
 
         md5 = hashlib.md5()
@@ -1832,8 +1832,8 @@ class MainWindow(QMainWindow):
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(meta_data, f, indent=2, ensure_ascii=False)
             
-        self.log_text(f"Exportação Pagoda concluída: {json_path}")
-        QMessageBox.information(self, "Sucesso", f"Música exportada para Pagoda com sucesso!\n\n{pagoda_path}")
+        self.log_text(f"Pagoda export completed: {json_path}")
+        QMessageBox.information(self, "Success", f"Song successfully exported to Pagoda!\n\n{pagoda_path}")
 
     def export_midi(self):
         if not self.validate_audio():
@@ -1841,9 +1841,9 @@ class MainWindow(QMainWindow):
 
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Exportar MIDI",
+            "Export MIDI",
             os.path.join(BASE_DIR, f"metronomo_{self.metronome_mode}.mid"),
-            "Arquivo MIDI (*.mid)"
+            "MIDI file (*.mid)"
         )
         if not path:
             return
@@ -1864,7 +1864,7 @@ class MainWindow(QMainWindow):
 
         if self.metronome_mode == "kicks":
             if not self.kicks:
-                QMessageBox.warning(self, "Aviso", "Nenhum kick detectado para exportar.")
+                QMessageBox.warning(self, "Warning", "No kicks detected to export.")
                 return
             max_s = max([s for _, s in self.kicks]) + 1e-9 if self.kicks else 1.0
             events = [(t, s / max_s) for t, s in self.kicks]
@@ -1872,7 +1872,7 @@ class MainWindow(QMainWindow):
 
         elif self.metronome_mode == "toms":
             if not self.toms:
-                QMessageBox.warning(self, "Aviso", "Nenhum tom detectado para exportar.")
+                QMessageBox.warning(self, "Warning", "No toms detected to export.")
                 return
             max_s = max([s for _, s in self.toms]) + 1e-9 if self.toms else 1.0
             events = [(t, s / max_s) for t, s in self.toms]
@@ -1880,7 +1880,7 @@ class MainWindow(QMainWindow):
 
         else:
             if bpm <= 0:
-                QMessageBox.warning(self, "Aviso", "Informe um BPM válido para exportar.")
+                QMessageBox.warning(self, "Warning", "Enter a valid BPM to export.")
                 return
             interval = 60.0 / bpm
             beat = offset % interval
@@ -1898,8 +1898,8 @@ class MainWindow(QMainWindow):
                 idx += 1
 
         create_midi_file(path, bpm, events, default_pitch=note_pitch)
-        self.log_text(f"MIDI exportado com sucesso: {path}")
-        QMessageBox.information(self, "Sucesso", f"Arquivo MIDI gerado com sucesso em:\n{path}")
+        self.log_text(f"MIDI exported successfully: {path}")
+        QMessageBox.information(self, "Success", f"MIDI file successfully generated at:\n{path}")
 
     def closeEvent(self, event):
         self.stop_audio()
@@ -1923,3 +1923,4 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+
