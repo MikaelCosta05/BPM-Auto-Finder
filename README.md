@@ -1,5 +1,29 @@
-## BPM AUTO FINDER
+<div align="center">
 
-#### BPM Auto Finder is a Python tool designed to analyze music and automatically identify the BPM, offset, and kick drum positions throughout the track. It also allows you to visualize the waveform, analyze BPM changes across different sections, manually adjust the results, and verify synchronization using a metronome.
+# 🎵 BPM AUTO FINDER
 
-#### Results can be exported in CSV, JSON, and MIDI formats, with additional support for exporting to the format used by the game Dead as Disco (Pagoda).
+### Automatic BPM, offset, and kick detection for music analysis
+
+</div>
+
+---
+
+**BPM Auto Finder** is a Python tool designed to analyze music and automatically identify the **BPM**, **offset**, and **kick drum positions** throughout a track.
+
+It also provides tools to:
+
+* Visualize the audio waveform
+* Analyze BPM changes across different sections
+* Manually adjust detected results
+* Verify synchronization using a built-in metronome
+
+### Export Formats
+
+Analysis results can be exported in:
+
+* **CSV**
+* **JSON**
+* **MIDI**
+* **Dead as Disco (Pagoda)** format
+
+---
