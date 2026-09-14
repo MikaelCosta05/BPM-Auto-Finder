@@ -27,3 +27,5 @@ Analysis results can be exported in:
 * **Dead as Disco (Pagoda)** format
 
 ---
+### Dependencies
+* FFmpeg
