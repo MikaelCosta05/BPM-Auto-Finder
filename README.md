@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 BPM AUTO FINDER
+# 🎛️ BPM AUTO FINDER
 
 ### Automatic BPM, offset, and kick detection for music analysis
 
